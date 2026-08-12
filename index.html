@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marketing MV Comunicações</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root{
+  --ink:#16221c;
+  --ink-soft:#1d2c24;
+  --ink-softer:#25392f;
+  --paper:#f5f1e2;
+  --paper-dim:#e9e0c9;
+  --ember:#c1562e;
+  --amber:#d9a441;
+  --teal:#2f9c76;
+  --mist:#93a596;
+  --mist-dim:#6b7d6c;
+  --line:rgba(245,241,226,0.12);
+  --text-on-paper:#1c2418;
+  --text-muted-on-paper:#6b6355;
+  --lotus:#b85c9e;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  min-height:100vh;
+  background:var(--ink);
+  color:var(--paper);
+  font-family:'Inter',sans-serif;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+}
+.wrap{
+  width:100%;
+  max-width:520px;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+.agency-header{
+  text-align:center;
+  margin-bottom:40px;
+  border-bottom:3px solid transparent;
+  border-image:linear-gradient(90deg, var(--teal), var(--lotus), var(--amber)) 1;
+  padding-bottom:24px;
+}
+.agency-header .eyebrow{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:1.5px;
+  color:var(--mist);
+  margin-bottom:8px;
+}
+.agency-header h1{
+  font-family:'Fraunces',serif;
+  font-style:italic;
+  font-weight:500;
+  font-size:34px;
+  margin:0;
+  letter-spacing:-0.5px;
+}
+
+.client-card{
+  background:var(--paper);
+  color:var(--text-on-paper);
+  border-radius:8px;
+  padding:28px;
+  cursor:pointer;
+  transition:transform .15s ease, box-shadow .15s ease;
+  box-shadow:0 2px 6px rgba(0,0,0,0.25);
+}
+.client-card:hover{
+  transform:translateY(-2px);
+  box-shadow:0 6px 16px rgba(0,0,0,0.3);
+}
+.client-card .client-label{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+  color:var(--text-muted-on-paper);
+  margin-bottom:6px;
+}
+.client-card h2{
+  font-family:'Fraunces',serif;
+  font-weight:600;
+  font-size:24px;
+  margin:0 0 8px;
+}
+.client-card .client-desc{
+  font-size:13px;
+  color:var(--text-muted-on-paper);
+}
+.client-card .enter-hint{
+  margin-top:16px;
+  font-size:12.5px;
+  font-weight:600;
+  color:var(--ember);
+}
+.client-logo{
+  height:32px;
+  width:auto;
+  display:block;
+  margin-bottom:10px;
+}
+
+/* Modal de senha */
+.overlay{
+  display:none;
+  position:fixed; inset:0;
+  background:rgba(10,14,11,0.7);
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  z-index:50;
+}
+.overlay.show{display:flex;}
+.password-box{
+  background:var(--paper);
+  color:var(--text-on-paper);
+  border-radius:8px;
+  padding:30px;
+  width:100%;
+  max-width:360px;
+  text-align:center;
+}
+.password-box h3{
+  font-family:'Fraunces',serif;
+  font-style:italic;
+  font-weight:500;
+  font-size:22px;
+  margin:0 0 6px;
+}
+.password-box .sub{
+  font-size:13px;
+  color:var(--text-muted-on-paper);
+  margin-bottom:20px;
+}
+.password-box input{
+  width:100%;
+  padding:12px 14px;
+  border-radius:6px;
+  border:1px solid rgba(28,36,24,0.25);
+  font-family:'IBM Plex Mono',monospace;
+  font-size:18px;
+  text-align:center;
+  letter-spacing:4px;
+  outline:none;
+  margin-bottom:10px;
+}
+.password-box input:focus{border-color:var(--ember);}
+.password-box .error-msg{
+  color:var(--ember);
+  font-size:12.5px;
+  font-weight:600;
+  min-height:16px;
+  margin-bottom:10px;
+}
+.password-box .btn-row{
+  display:flex;
+  gap:10px;
+}
+.password-box button{
+  flex:1;
+  padding:11px;
+  border-radius:6px;
+  border:none;
+  font-family:'Inter',sans-serif;
+  font-weight:600;
+  font-size:14px;
+  cursor:pointer;
+}
+.btn-entrar{
+  background:var(--ink);
+  color:var(--paper);
+}
+.btn-voltar{
+  background:none;
+  border:1px solid rgba(28,36,24,0.3) !important;
+  color:var(--text-on-paper);
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="agency-header">
+    <div class="eyebrow">Marketing MV Comunicações</div>
+    <h1>Painéis de clientes</h1>
+  </div>
+
+  <div class="client-card" id="card-flora">
+    <div class="client-label">Cliente</div>
+    <h2>Grupo Flora Brasil</h2>
+    <div class="client-desc">Painel de demandas e financeiro.</div>
+    <div class="enter-hint">Clique para acessar →</div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay-senha">
+  <div class="password-box">
+    <h3>Grupo Flora Brasil</h3>
+    <div class="sub">Digite a senha de acesso</div>
+    <input type="password" id="input-senha" maxlength="10" placeholder="••••" autocomplete="off">
+    <div class="error-msg" id="erro-senha"></div>
+    <div class="btn-row">
+      <button class="btn-voltar" id="btn-voltar">Voltar</button>
+      <button class="btn-entrar" id="btn-entrar">Entrar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SENHAS = {
+  flora: '1996'
+};
+const DESTINOS = {
+  flora: 'painel.html'
+};
+const NOMES = {
+  flora: 'Grupo Flora Brasil'
+};
+
+let clienteAtual = null;
+
+document.getElementById('card-flora').addEventListener('click', ()=>{
+  abrirSenha('flora');
+});
+
+function abrirSenha(cliente){
+  clienteAtual = cliente;
+  document.querySelector('.password-box h3').textContent = NOMES[cliente];
+  document.getElementById('input-senha').value = '';
+  document.getElementById('erro-senha').textContent = '';
+  document.getElementById('overlay-senha').classList.add('show');
+  document.getElementById('input-senha').focus();
+}
+
+function fecharSenha(){
+  document.getElementById('overlay-senha').classList.remove('show');
+  clienteAtual = null;
+}
+
+document.getElementById('btn-voltar').addEventListener('click', fecharSenha);
+document.getElementById('overlay-senha').addEventListener('click', e=>{
+  if(e.target.id === 'overlay-senha') fecharSenha();
+});
+
+function tentarEntrar(){
+  const valor = document.getElementById('input-senha').value.trim();
+  if(valor === SENHAS[clienteAtual]){
+    if(DESTINOS[clienteAtual]){
+      sessionStorage.setItem('acesso_' + clienteAtual, 'ok');
+      window.location.href = DESTINOS[clienteAtual];
+    } else {
+      document.getElementById('erro-senha').style.color = '#2f9c76';
+      document.getElementById('erro-senha').textContent = 'Senha correta! O painel desse cliente ainda está sendo preparado.';
+    }
+  } else {
+    document.getElementById('erro-senha').style.color = '';
+    document.getElementById('erro-senha').textContent = 'Senha incorreta. Tente novamente.';
+    document.getElementById('input-senha').value = '';
+    document.getElementById('input-senha').focus();
+  }
+}
+
+document.getElementById('btn-entrar').addEventListener('click', tentarEntrar);
+document.getElementById('input-senha').addEventListener('keydown', e=>{
+  if(e.key === 'Enter') tentarEntrar();
+});
+</script>
+</body>
+</html>
