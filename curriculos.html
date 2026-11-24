@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Banco de Currículos — RH</title>
+<style>
+  :root{
+    --bg: #15141b;
+    --bg-elev: #1c1b24;
+    --bg-elev-2: #24232f;
+    --line: #322f3d;
+    --text: #f1eef7;
+    --text-dim: #9c96ad;
+    --accent: #e0a63c;
+    --accent-dim: #4a3a1e;
+    --good: #5fb787;
+    --warn: #e0a63c;
+    --bad: #d9695f;
+
+    --c-viveiro: #4a9c5f;
+    --c-viveiro-bg: #1a3320;
+    --c-novociclo: #2f9c76;
+    --c-novociclo-bg: #17332a;
+    --c-lotus: #c26bb0;
+    --c-lotus-bg: #33202e;
+
+    --radius: 12px;
+    --font-head: 'Segoe UI', system-ui, sans-serif;
+    --font-body: system-ui, -apple-system, sans-serif;
+    --font-mono: 'Consolas', monospace;
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+
+  body{
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    min-height: 100vh;
+  }
+
+  /* ---------- LOGIN ---------- */
+  #login-screen{
+    position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+    background: radial-gradient(circle at 30% 20%, #211f2b, var(--bg));
+    z-index: 100;
+  }
+  #login-box{
+    background: var(--bg-elev); border:1px solid var(--line); border-radius: var(--radius);
+    padding: 40px 36px; width: 320px; text-align:center;
+  }
+  #login-box h1{ font-family: var(--font-head); font-size: 22px; margin-bottom: 6px; letter-spacing: 0.3px;}
+  #login-box p{ color: var(--text-dim); font-size: 13px; margin-bottom: 22px;}
+  #login-box input{
+    width:100%; padding:12px 14px; border-radius:8px; border:1px solid var(--line);
+    background: var(--bg-elev-2); color: var(--text); font-size: 14px; margin-bottom: 14px; outline:none;
+  }
+  #login-box input:focus{ border-color: var(--accent); }
+  #login-box button{
+    width:100%; padding:12px; border-radius:8px; border:none; background: var(--accent);
+    color:#241a05; font-weight:600; font-size:14px; cursor:pointer;
+  }
+  #login-error{ color: var(--bad); font-size:12.5px; margin-top:10px; min-height:16px;}
+
+  /* ---------- APP SHELL ---------- */
+  #app{ display:none; min-height:100vh; }
+
+  header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 18px 28px; border-bottom:1px solid var(--line); background: var(--bg-elev);
+  }
+  header h1{ font-family: var(--font-head); font-size:19px; letter-spacing:0.3px; }
+  header h1 span{ color: var(--accent); }
+
+  nav{ display:flex; gap:6px; }
+  nav button{
+    background:none; border:1px solid transparent; color: var(--text-dim);
+    padding:9px 16px; border-radius:8px; font-size:13.5px; cursor:pointer; font-weight:500;
+    transition: all .15s;
+  }
+  nav button:hover{ color: var(--text); }
+  nav button.active{ background: var(--bg-elev-2); color: var(--text); border-color: var(--line); }
+
+  main{ padding: 26px 28px 60px; max-width: 1400px; margin: 0 auto; }
+  .view{ display:none; }
+  .view.active{ display:block; }
+
+  /* ---------- shared bits ---------- */
+  .toolbar{ display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:20px; flex-wrap:wrap;}
+  .btn{
+    padding:10px 16px; border-radius:8px; border:1px solid var(--line); background: var(--bg-elev-2);
+    color: var(--text); font-size:13.5px; cursor:pointer; font-weight:500;
+  }
+  .btn:hover{ border-color: var(--accent); }
+  .btn-primary{ background: var(--accent); color:#241a05; border-color: var(--accent); font-weight:600;}
+  .btn-primary:hover{ opacity:0.92; }
+  .btn-danger{ color: var(--bad); }
+
+  .badge{ display:inline-block; padding:3px 9px; border-radius:20px; font-size:11px; font-weight:600; letter-spacing:0.2px;}
+  .badge.viveiro{ background: var(--c-viveiro-bg); color: var(--c-viveiro);}
+  .badge.novociclo{ background: var(--c-novociclo-bg); color: var(--c-novociclo);}
+  .badge.lotus{ background: var(--c-lotus-bg); color: var(--c-lotus);}
+
+  input[type=text], input[type=date], input[type=tel], input[type=email], textarea, select{
+    width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--line);
+    background: var(--bg-elev-2); color: var(--text); font-size:13.5px; outline:none; font-family: var(--font-body);
+  }
+  input:focus, textarea:focus, select:focus{ border-color: var(--accent); }
+  label{ display:block; font-size:12px; color: var(--text-dim); margin-bottom:5px; margin-top:12px; font-weight:600;}
+  textarea{ resize: vertical; min-height:70px;}
+
+  /* ---------- CURRÍCULOS ---------- */
+  .filtros-tipo{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;}
+  .filtro-chip{
+    padding:8px 14px; border-radius:20px; border:1px solid var(--line); background: var(--bg-elev-2);
+    color: var(--text-dim); font-size:12.5px; cursor:pointer; font-weight:600;
+  }
+  .filtro-chip.active{ border-color: var(--accent); color: var(--accent); background: var(--accent-dim);}
+  .search-row{ margin-bottom:18px; }
+  .search-row input{ font-size:14px; padding:12px 14px; }
+
+  .curriculo-grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:14px;}
+  .ccard{ background: var(--bg-elev); border:1px solid var(--line); border-radius: var(--radius); padding:16px;}
+  .ccard .top{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;}
+  .ccard h4{ font-size:15px; margin-bottom:2px;}
+  .ccard .cargo{ font-size:12px; color: var(--text-dim); }
+  .ccard .info{ font-size:12.5px; color: var(--text-dim); margin-top:10px; line-height:1.7;}
+  .ccard .info b{ color: var(--text); font-weight:500;}
+  .ccard .actions{ display:flex; gap:8px; margin-top:12px; }
+  .ccard .actions a, .ccard .actions button{
+    flex:1; text-align:center; padding:7px; border-radius:7px; font-size:12px; text-decoration:none;
+    background: var(--bg-elev-2); color: var(--text); border:1px solid var(--line); cursor:pointer;
+  }
+  .empty-state{ text-align:center; padding:60px 20px; color: var(--text-dim); }
+
+  /* ---------- MODAL ---------- */
+  .modal-overlay{
+    display:none; position:fixed; inset:0; background: rgba(10,9,14,0.7); z-index:50;
+    align-items:center; justify-content:center; padding:20px;
+  }
+  .modal-overlay.active{ display:flex; }
+  .modal{
+    background: var(--bg-elev); border:1px solid var(--line); border-radius: var(--radius);
+    width:100%; max-width:480px; max-height:90vh; overflow-y:auto; padding:26px;
+  }
+  .modal h2{ font-family: var(--font-head); font-size:17px; margin-bottom:4px;}
+  .modal .close{ float:right; background:none; border:none; color: var(--text-dim); font-size:20px; cursor:pointer;}
+  .modal-actions{ display:flex; gap:10px; margin-top:22px;}
+  .modal-actions .btn{ flex:1;}
+  .file-drop{
+    border:1.5px dashed var(--line); border-radius:8px; padding:16px; text-align:center; font-size:12.5px;
+    color: var(--text-dim); margin-top:12px; cursor:pointer;
+  }
+  .file-drop.has-file{ border-color: var(--good); color: var(--good);}
+  @media (max-width: 900px){
+    header{ flex-direction:column; align-items:flex-start; gap:12px;}
+  }
+  }
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div id="login-box">
+    <h1>Banco de <span>Currículos</span></h1>
+    <p>Digite a senha de acesso</p>
+    <input type="password" id="login-pass" placeholder="Senha" />
+    <button onclick="tentarLogin()">Entrar</button>
+    <div id="login-error"></div>
+  </div>
+</div>
+
+<div id="app">
+  <header>
+    <h1>Banco de <span>Currículos</span></h1>
+  </header>
+
+  <main>
+
+    <!-- ===================== VIEW: CURRÍCULOS ===================== -->
+    <section id="view-curriculos" class="view active">
+      <div class="toolbar">
+        <div style="color:var(--text-dim); font-size:13px;">Banco de candidatos, separado por empresa</div>
+        <button class="btn btn-primary" onclick="abrirModalCurriculo()">+ Novo currículo</button>
+      </div>
+      <div class="search-row">
+        <input type="text" id="busca-curriculo" placeholder="Buscar por nome, cargo, telefone ou e-mail..." oninput="renderCurriculos()" />
+      </div>
+      <div class="filtros-tipo" id="filtros-tipo"></div>
+      <div class="curriculo-grid" id="curriculo-grid"></div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ===================== MODAL: CURRÍCULO ===================== -->
+<div class="modal-overlay" id="modal-curriculo">
+  <div class="modal">
+    <button class="close" onclick="fecharModais()">×</button>
+    <h2 id="modal-curriculo-titulo">Novo currículo</h2>
+    <input type="hidden" id="c-id" />
+
+    <label>Nome completo</label>
+    <input type="text" id="c-nome" placeholder="Nome do candidato" />
+
+    <label>Empresa</label>
+    <select id="c-tipo">
+      <option value="viveiro">Viveiro Flora Brasil</option>
+      <option value="novociclo">Novo Ciclo</option>
+      <option value="lotus">Lotus</option>
+    </select>
+
+    <label>Cargo pretendido</label>
+    <input type="text" id="c-cargo" placeholder="Ex: Motorista categoria D" />
+
+    <label>Telefone</label>
+    <input type="tel" id="c-telefone" placeholder="(00) 00000-0000" />
+
+    <label>E-mail</label>
+    <input type="email" id="c-email" placeholder="email@exemplo.com" />
+
+    <label>Experiência / resumo</label>
+    <textarea id="c-experiencia" placeholder="Resumo rápido da experiência do candidato"></textarea>
+
+    <label>Observações</label>
+    <textarea id="c-observacoes" placeholder="Observações internas (opcional)"></textarea>
+
+    <label>Currículo (PDF ou imagem)</label>
+    <div class="file-drop" id="file-drop" onclick="document.getElementById('c-arquivo').click()">
+      Clique para escolher o arquivo
+    </div>
+    <input type="file" id="c-arquivo" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="onArquivoSelecionado()" />
+
+    <div class="modal-actions">
+      <button class="btn btn-danger" id="c-btn-excluir" onclick="excluirCurriculo()" style="display:none;">Excluir</button>
+      <button class="btn btn-primary" onclick="salvarCurriculo()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ======================= CONFIG =======================
+const API_URL = 'https://script.google.com/macros/s/AKfycbymN3gBa6Z-w2wsVILQT0Om1fwzpCEArajiQFs1FrAgDhQkX8nJHSPeaGqb1cj7jDXVzw/exec';
+const SENHA_ACESSO = '1996'; // troque se quiser
+
+const TIPOS = [
+  { id: 'viveiro', label: 'Viveiro Flora Brasil' },
+  { id: 'novociclo', label: 'Novo Ciclo' },
+  { id: 'lotus', label: 'Lotus' }
+];
+
+let curriculos = [];
+let filtroTipoAtivo = 'todos';
+let arquivoBase64 = null;
+let arquivoNome = null;
+let arquivoMime = null;
+
+// ======================= LOGIN =======================
+function tentarLogin(){
+  const val = document.getElementById('login-pass').value;
+  if (val === SENHA_ACESSO){
+    sessionStorage.setItem('acesso_rh', 'ok');
+    iniciarApp();
+  } else {
+    document.getElementById('login-error').textContent = 'Senha incorreta.';
+  }
+}
+document.getElementById('login-pass').addEventListener('keydown', e => { if(e.key === 'Enter') tentarLogin(); });
+
+if (sessionStorage.getItem('acesso_rh') === 'ok'){
+  iniciarApp();
+}
+
+function iniciarApp(){
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  carregarTudo();
+}
+
+// ======================= API =======================
+async function apiGet(action){
+  const res = await fetch(`${API_URL}?action=${action}`);
+  const json = await res.json();
+  if (!json.ok) throw new Error(json.error);
+  return json.data;
+}
+
+async function apiPost(payload){
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  });
+  const json = await res.json();
+  if (!json.ok) throw new Error(json.error);
+  return json.data;
+}
+
+async function carregarTudo(){
+  try{
+    curriculos = await apiGet('listCurriculos');
+  } catch(e){ curriculos = []; console.error('Erro ao carregar currículos', e); }
+  renderFiltrosTipo();
+  renderCurriculos();
+}
+// ======================= MODAIS =======================
+function fecharModais(){
+  document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+  arquivoBase64 = null; arquivoNome = null; arquivoMime = null;
+}
+
+function tipoLabel(id){
+  const t = TIPOS.find(t => t.id === id);
+  return t ? t.label : id;
+}
+
+// ======================= CURRÍCULOS =======================
+function renderFiltrosTipo(){
+  const container = document.getElementById('filtros-tipo');
+  const todosChip = `<div class="filtro-chip ${filtroTipoAtivo==='todos'?'active':''}" onclick="setFiltroTipo('todos')">Todos (${curriculos.length})</div>`;
+  const chips = TIPOS.map(t => {
+    const qtd = curriculos.filter(c => c.tipo === t.id).length;
+    return `<div class="filtro-chip ${filtroTipoAtivo===t.id?'active':''}" onclick="setFiltroTipo('${t.id}')">${t.label} (${qtd})</div>`;
+  }).join('');
+  container.innerHTML = todosChip + chips;
+}
+
+function setFiltroTipo(tipo){
+  filtroTipoAtivo = tipo;
+  renderFiltrosTipo();
+  renderCurriculos();
+}
+
+function renderCurriculos(){
+  const busca = document.getElementById('busca-curriculo').value.toLowerCase().trim();
+  let lista = curriculos.filter(c => filtroTipoAtivo === 'todos' || c.tipo === filtroTipoAtivo);
+  if (busca){
+    lista = lista.filter(c =>
+      (c.nome||'').toLowerCase().includes(busca) ||
+      (c.cargoPretendido||'').toLowerCase().includes(busca) ||
+      (c.telefone||'').toLowerCase().includes(busca) ||
+      (c.email||'').toLowerCase().includes(busca)
+    );
+  }
+
+  const grid = document.getElementById('curriculo-grid');
+  if (lista.length === 0){
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">Nenhum currículo encontrado.</div>`;
+    return;
+  }
+
+  grid.innerHTML = lista.map(c => `
+    <div class="ccard">
+      <div class="top">
+        <div>
+          <h4>${c.nome}</h4>
+          <div class="cargo">${c.cargoPretendido || ''}</div>
+        </div>
+        <span class="badge ${c.tipo}">${tipoLabel(c.tipo)}</span>
+      </div>
+      <div class="info">
+        ${c.telefone ? `<div><b>Tel:</b> ${c.telefone}</div>` : ''}
+        ${c.email ? `<div><b>E-mail:</b> ${c.email}</div>` : ''}
+        ${c.experiencia ? `<div style="margin-top:6px;">${c.experiencia}</div>` : ''}
+      </div>
+      <div class="actions">
+        ${c.arquivoUrl ? `<a href="${c.arquivoUrl}" target="_blank">Ver currículo</a>` : ''}
+        <button onclick='abrirModalCurriculo(${JSON.stringify(c).replace(/'/g,"&apos;")})'>Editar</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function abrirModalCurriculo(c){
+  document.getElementById('modal-curriculo-titulo').textContent = c ? 'Editar currículo' : 'Novo currículo';
+  document.getElementById('c-id').value = c ? c.id : '';
+  document.getElementById('c-nome').value = c ? c.nome : '';
+  document.getElementById('c-tipo').value = c ? c.tipo : 'viveiro';
+  document.getElementById('c-cargo').value = c ? c.cargoPretendido : '';
+  document.getElementById('c-telefone').value = c ? c.telefone : '';
+  document.getElementById('c-email').value = c ? c.email : '';
+  document.getElementById('c-experiencia').value = c ? c.experiencia : '';
+  document.getElementById('c-observacoes').value = c ? c.observacoes : '';
+  document.getElementById('c-btn-excluir').style.display = c ? 'block' : 'none';
+
+  const fileDrop = document.getElementById('file-drop');
+  if (c && c.arquivoNome){
+    fileDrop.textContent = `Arquivo atual: ${c.arquivoNome} (clique para trocar)`;
+    fileDrop.classList.add('has-file');
+  } else {
+    fileDrop.textContent = 'Clique para escolher o arquivo';
+    fileDrop.classList.remove('has-file');
+  }
+  arquivoBase64 = null; arquivoNome = null; arquivoMime = null;
+  document.getElementById('c-arquivo').value = '';
+
+  document.getElementById('modal-curriculo').classList.add('active');
+}
+
+function onArquivoSelecionado(){
+  const input = document.getElementById('c-arquivo');
+  const file = input.files[0];
+  if (!file) return;
+  arquivoNome = file.name;
+  arquivoMime = file.type || 'application/octet-stream';
+  const reader = new FileReader();
+  reader.onload = () => {
+    arquivoBase64 = reader.result.split(',')[1];
+    const fileDrop = document.getElementById('file-drop');
+    fileDrop.textContent = `Selecionado: ${arquivoNome}`;
+    fileDrop.classList.add('has-file');
+  };
+  reader.readAsDataURL(file);
+}
+
+async function salvarCurriculo(){
+  const c = {
+    id: document.getElementById('c-id').value || null,
+    nome: document.getElementById('c-nome').value.trim(),
+    tipo: document.getElementById('c-tipo').value,
+    cargoPretendido: document.getElementById('c-cargo').value.trim(),
+    telefone: document.getElementById('c-telefone').value.trim(),
+    email: document.getElementById('c-email').value.trim(),
+    experiencia: document.getElementById('c-experiencia').value.trim(),
+    observacoes: document.getElementById('c-observacoes').value.trim()
+  };
+  if (!c.nome){ alert('Dá o nome do candidato.'); return; }
+
+  try{
+    if (arquivoBase64){
+      const up = await apiPost({ action: 'uploadArquivo', nomeArquivo: arquivoNome, mimeType: arquivoMime, base64: arquivoBase64 });
+      c.arquivoUrl = up.url;
+      c.arquivoNome = up.nome;
+    }
+    const salvo = await apiPost({ action: 'saveCurriculo', curriculo: c });
+    const idx = curriculos.findIndex(x => String(x.id) === String(salvo.id));
+    if (idx >= 0) curriculos[idx] = salvo; else curriculos.push(salvo);
+    fecharModais();
+    renderFiltrosTipo();
+    renderCurriculos();
+  } catch(e){ alert('Erro ao salvar: ' + e.message); }
+}
+
+async function excluirCurriculo(){
+  const id = document.getElementById('c-id').value;
+  if (!id || !confirm('Excluir esse currículo?')) return;
+  try{
+    await apiPost({ action: 'deleteCurriculo', id });
+    curriculos = curriculos.filter(x => String(x.id) !== String(id));
+    fecharModais();
+    renderFiltrosTipo();
+    renderCurriculos();
+  } catch(e){ alert('Erro ao excluir: ' + e.message); }
+}
+</script>
+</body>
+</html>
